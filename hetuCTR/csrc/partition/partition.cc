@@ -28,12 +28,23 @@ PartitionStruct::PartitionStruct(const py::array_t<int>& _input_data, const py::
   n_data_ = _input_data.shape(0);
   n_slot_ = _input_data.shape(1);
   n_edge_ = n_data_ * n_slot_;
-  const int *data = _input_data.data();
-  n_embed_ = 0;
+  const int *old_data = _input_data.data();
+  std::vector<int> data(n_edge_);
+  n_embed_ = -1;
+  max_embed_ = 0;
   for (int i = 0 ; i < n_edge_; i++) {
-    n_embed_ = std::max(n_embed_, data[i]);
+    max_embed_ = std::max(max_embed_, old_data[i]);
+    if(!g2l_.count(old_data[i])) {
+      ++n_embed_;
+      g2l_[old_data[i]] = n_embed_;
+      l2g_[n_embed_] = old_data[i];
+      data[i] = n_embed_;
+    }else{
+      data[i] = g2l_[old_data[i]];
+    }
   }
   n_embed_++;
+  max_embed_++;
   std::vector<int> count(n_embed_);
   data_indptr_.resize(n_data_ + 1);
   embed_indptr_.resize(n_embed_ + 1);
@@ -180,16 +191,30 @@ py::array_t<float> PartitionStruct::getCommunication() {
 }
 
 py::array_t<float> PartitionStruct::getPriority() {
-  py::array_t<float> priority({n_part_, n_embed_});
+  py::array_t<float> priority({n_part_, max_embed_});
+  for (int i = 0; i < n_part_; i++) {
+    for (int j = 0 ; j < max_embed_; j++) {
+      priority.mutable_at(i, j) = 0;
+    }
+  }
   for (int i = 0; i < n_part_; i++) {
     for (int j = 0 ; j < n_embed_; j++) {
-      if (cnt_part_embed_[i][j] == 0) priority.mutable_at(i, j) = 0;
-      else
-        priority.mutable_at(i, j) = comm_mat_[i][res_embed_[j]] * std::pow(soft_cnt_[cnt_part_embed_[i][j]], 2l) *
+      int dist_j = l2g_[j];
+      if (cnt_part_embed_[i][j] != 0)
+        priority.mutable_at(i, dist_j) = comm_mat_[i][res_embed_[j]] * std::pow(soft_cnt_[cnt_part_embed_[i][j]], 2l) *
           ((1.0 / (embed_indptr_[j + 1] - embed_indptr_[j])) + (1.0 / cnt_part_embed_[i][j]));
     }
   }
   return priority;
+}
+
+py::tuple PartitionStruct::getResult(){
+  std::vector<int> res_embed_remaped_(max_embed_,-1);
+  for(int i = 0; i < n_embed_; i++){
+    int dist_i = l2g_[i];
+    res_embed_remaped_[dist_i] = res_embed_[i];
+  }
+  return py::make_tuple(bind::vec_nocp(res_data_), bind::vec_nocp(res_embed_remaped_));
 }
 
 std::unique_ptr<PartitionStruct> partition(
