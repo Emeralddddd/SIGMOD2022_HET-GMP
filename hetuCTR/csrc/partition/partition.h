@@ -7,7 +7,7 @@ namespace hetuCTR {
 
 class PartitionStruct {
 public:
-  PartitionStruct(const py::array_t<int>& _input_data, const py::array_t<float>& _comm_mat, int _n_part, int _batch_size);
+  PartitionStruct(const py::array_t<int>& _input_data, const py::array_t<float>& _comm_mat, int _n_part, int _batch_size, float _theta);
   void refineData();
   void refineEmbed();
   py::array_t<float> getCommunication();
@@ -16,7 +16,7 @@ public:
   std::vector<int> res_data_, res_embed_;
   std::vector<int> cnt_data_, cnt_embed_;
 private:
-  float alpha_, beta_;
+  float alpha_, beta_, theta_;
 
   int n_part_, n_data_, n_slot_, n_edge_, n_embed_;
   int batch_size_;
@@ -30,7 +30,7 @@ private:
 std::unique_ptr<PartitionStruct> partition(
   const py::array_t<int>& _input_data,
   const py::array_t<float>& _comm_mat,
-  int n_part, int batch_size
+  int n_part, int batch_size, float theta
 );
 
 

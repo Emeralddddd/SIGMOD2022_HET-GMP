@@ -23,8 +23,8 @@ int argmax(const std::vector<T> &val) {
   return arg_res;
 }
 
-PartitionStruct::PartitionStruct(const py::array_t<int>& _input_data, const py::array_t<float>& _comm_mat, int _n_part, int _batch_size)
-: n_part_(_n_part), batch_size_(_batch_size) {
+PartitionStruct::PartitionStruct(const py::array_t<int>& _input_data, const py::array_t<float>& _comm_mat, int _n_part, int _batch_size, float _theta)
+: n_part_(_n_part), batch_size_(_batch_size), theta_(_theta) {
   n_data_ = _input_data.shape(0);
   n_slot_ = _input_data.shape(1);
   n_edge_ = n_data_ * n_slot_;
@@ -147,7 +147,7 @@ void PartitionStruct::refineEmbed() {
     for (int j = 0; j < n_part_; j++) {
       for (int k = 0; k < n_part_; k++)
         score[k] -= comm_mat_[j][k] * soft_cnt_[cnt[j]];
-      score[j] -= 0.01 * embed_weight_[j] * soft_cnt_[embed_indptr_[i+1]-embed_indptr_[i]];
+      score[j] -= theta_ * embed_weight_[j] * soft_cnt_[embed_indptr_[i+1]-embed_indptr_[i]];
     }
     int s = argmax(score);
     #pragma omp critical
@@ -195,14 +195,14 @@ py::array_t<float> PartitionStruct::getPriority() {
 std::unique_ptr<PartitionStruct> partition(
   const py::array_t<int>& _input_data,
   const py::array_t<float>& _comm_mat,
-  int n_part, int batch_size) {
+  int n_part, int batch_size, float theta) {
   PYTHON_CHECK_ARRAY(_input_data);
   PYTHON_CHECK_ARRAY(_comm_mat);
   assert(_input_data.ndim() == 2);
   assert(_comm_mat.ndim() == 2);
   assert(_comm_mat.shape(0) == _comm_mat.shape(1));
   assert(_comm_mat.shape(0) == n_part);
-  return  std::make_unique<PartitionStruct>(_input_data, _comm_mat, n_part, batch_size);
+  return  std::make_unique<PartitionStruct>(_input_data, _comm_mat, n_part, batch_size, theta);
 }
 
 }
