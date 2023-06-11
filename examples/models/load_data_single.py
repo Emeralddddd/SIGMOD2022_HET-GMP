@@ -7,54 +7,25 @@ import numpy as np
 ###########################################################################
 
 def process_criteo(path):
-    import tarfile
     import pandas as pd
-    from sklearn.preprocessing import LabelEncoder
-    assert os.path.isdir(path), 'Please provide a directory path.'
-    # print("Extracting criteo ...")
-    # with tarfile.open(os.path.join(path, 'dac.tar.gz')) as f:
-    #     f.extractall(path=path)
-    # print("Create local files...")
-
     # save csv filed
-    # df = pd.read_csv(os.path.join(path, "day_0"), sep='\t', header = None)
-    # df.columns = ['label'] + ["I"+str(i) for i in range(1,14)] + ["C"+str(i) for i in range(14,40)]
+    df = pd.read_csv(os.path.join(path, "train.txt"), sep='\t', header = None)
+    df.columns = ['label'] + ["I"+str(i) for i in range(1,14)] + ["C"+str(i) for i in range(14,40)]
     # df = df.reindex(np.random.permutation(df.index))
     # save numpy arrays
     # target_path = [os.path.join(path, filename) for filename in [\
-    #     'train_dense_feats.npy', 'train_ sparse_feats.npy', 'train_labels.npy', \
+    #     'train_dense_feats.npy', 'train_sparse_feats.npy', 'train_labels.npy', \
     #     'test_dense_feats.npy', 'test_sparse_feats.npy', 'test_labels.npy']]
     # dense_feats =  [col for col in df.columns if col.startswith('I')]
-    # sparse_feats = [col for col in df.columns if col.startswith('C')]
-    label_encoders = [LabelEncoder()] * 26
-    feats_counts = [0] *26
-    feature_cnt = 0
+    sparse_feats = [col for col in df.columns if col.startswith('C')]
     # labels = df[['label']]
     # dense_feats = process_dense_feats(df, dense_feats)
-    # sparse_feats = process_sparse_feats(df, sparse_feats, label_encoders)
-    # np.save(os.path.join(path,"../sparse_day_0.npy"),sparse_feats)
+    sparse_feats = process_sparse_feats(df, sparse_feats)
     # num_data = dense_feats.shape[0]
-    for i in range(24):
-        df = pd.read_csv(os.path.join(path, "day_" + str(i)), sep='\t', header = None)
-        df.columns = ['label'] + ["I"+str(i) for i in range(1,14)] + ["C"+str(i) for i in range(14,40)]
-        sparse_feats = [col for col in df.columns if col.startswith('C')]
-        sparse_feats = process_sparse_feats(df, sparse_feats, label_encoders,feats_counts,feature_cnt)
-        np.save(os.path.join(path,"../sparse_day_" + str(i) + ".npy"),sparse_feats)
     # split data in 2 parts
     # test_num = num_data // 10
-    # processed_data = [
-    #     dense_feats[:-test_num],  # train dense
-    #     sparse_feats[:-test_num], # train sparse
-    #     labels[:-test_num],       # train labels
-    #     dense_feats[-test_num:],  # validate dense
-    #     sparse_feats[-test_num:], # validate sparse
-    #     labels[-test_num:],       # validate labels
-    # ]
-    # print('Array shapes:')
-    # for i in range(len(processed_data)):
-    #     print(os.path.split(target_path[i])[-1].split('.')[0], processed_data[i].shape)
-    #     np.save(target_path[i], processed_data[i])
-    # print('Numpy arrays saved.')
+    np.save(os.path.join(path, "sparse_feats.npy"), sparse_feats)
+    print('Numpy arrays saved.')
 
 
 def process_dense_feats(data, feats):
@@ -66,20 +37,18 @@ def process_dense_feats(data, feats):
     return d
 
 
-def process_sparse_feats(data, feats,label_encoders, feats_counts, feature_cnt):
+def process_sparse_feats(data, feats):
+    from sklearn.preprocessing import LabelEncoder
     # process to embeddings.
     d = data.copy()
     d = d[feats].fillna("-1")
-    for f,label_encoder in zip(feats,label_encoders):
+    for f in feats:
+        label_encoder = LabelEncoder()
         d[f] = label_encoder.fit_transform(d[f])
+    feature_cnt = 0
     for f in feats:
         d[f] += feature_cnt
         feature_cnt += d[f].nunique()
-    for i in range(26):
-        d.loc[d[feats[i]] >= feats_counts[i], [feats[i]]] += feature_cnt
-        new_feat_count = len(label_encoders[i].classes_) 
-        feature_cnt += new_feat_count - feats_counts[i]
-        feats_counts[i] = new_feat_count
     return d
 
 
@@ -302,7 +271,6 @@ def process_avazu(path=os.path.join(os.path.split(os.path.abspath(__file__))[0],
     # please download in advance from https://www.kaggle.com/c/avazu-ctr-prediction/data
     train_file = os.path.join(path, 'train.csv')
     # test_file = os.path.join(path, 'test.csv') # useless, no labels
-    
 
     df_train = pd.read_csv(train_file)
     sparse_feats = process_sparse_feats(df, df.columns[2:])
@@ -314,4 +282,4 @@ def process_avazu(path=os.path.join(os.path.split(os.path.abspath(__file__))[0],
 
 
 if __name__ == '__main__':
-    process_criteo("/data/1/zhen/criteo-tb/src")
+    process_criteo("/data/1/zhen/dac")
