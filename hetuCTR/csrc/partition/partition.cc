@@ -209,7 +209,7 @@ py::array_t<float> PartitionStruct::getPriority() {
 }
 
 py::tuple PartitionStruct::getResult(){
-  std::vector<int> res_embed_remaped_(max_embed_,-1);
+  res_embed_remaped_.resize(max_embed_,-1);
   for(int i = 0; i < n_embed_; i++){
     int dist_i = l2g_[i];
     res_embed_remaped_[dist_i] = res_embed_[i];
