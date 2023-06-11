@@ -14,7 +14,7 @@ public:
   py::array_t<float> getPriority();
   py::tuple getResult();
 
-  std::vector<int> res_data_, res_embed_;
+  std::vector<int> res_data_, res_embed_, res_embed_remaped_;
   std::vector<int> cnt_data_, cnt_embed_;
 protected:
   float alpha_, beta_, theta_;
