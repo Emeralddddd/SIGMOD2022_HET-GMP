@@ -56,9 +56,11 @@ def direct_partition(data, nparts, ngpus, batch_size, rerun, output):
         priority[i][idxs] = -1 # remove embedding that has been stored
         arr = np.argsort(priority[i])[len(idxs):][ : : -1]
         arr_dict[str(i)] = arr
+    arr_dict["priority"] = priority
     print("Sort priority Time : ", time.time()-start)
 
-    np.savez(output, **arr_dict)
+    if output != "":
+        np.savez(output, **arr_dict)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -71,6 +73,8 @@ if __name__ == '__main__':
     start = time.time()
     data = load_criteo_data()
     print("Load Data Time : ", time.time()-start)
-    for i in range(1,80):
-        print(i)
-        direct_partition(data[(i-1)*1000000:i * 1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/criteo-tb/partition/new/day0_{}m.npz".format(i))
+    # np.random.shuffle(data)
+    direct_partition(data[:1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/dac/partition/temp.npz")
+    # for i in range(1,80):
+    #     print(i)
+    #     direct_partition(data[(i-1)*1000000:i * 1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/criteo-tb/partition/new/day0_{}m.npz".format(i))
