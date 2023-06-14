@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message PriorityMap {
+  map<int32, float> map_field = 1;
+}
+
+message PartialResult {
+  map<int32, int32> partition_map = 1;
+  repeated PriorityMap priority_maps = 2;
+}
