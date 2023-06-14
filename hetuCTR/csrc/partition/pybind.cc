@@ -31,7 +31,7 @@ PYBIND11_MODULE(hetuCTR_partition, m) {
     })
     .def("get_embed_cnt", [](IncPartitionStruct &s) {
       return bind::vec_nocp(s.cnt_embed_);
-    });
+    }).def("save_partial_result", &IncPartitionStruct::savePartialResult);
   m.def("inc_partition", inc_partition);
 
 } // PYBIND11_MODULE
