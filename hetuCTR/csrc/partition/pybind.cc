@@ -11,7 +11,9 @@ PYBIND11_MODULE(hetuCTR_partition, m) {
     .def("refine_embed", &PartitionStruct::refineEmbed)
     .def("get_communication", &PartitionStruct::getCommunication)
     .def("get_priority", &PartitionStruct::getPriority)
-    .def("get_result", &PartitionStruct::getResult)
+    .def("get_result", [](PartitionStruct &s) {
+      return py::make_tuple(bind::vec_nocp(s.res_data_), bind::vec_nocp(s.res_embed_));
+    })
     .def("get_data_cnt", [](PartitionStruct &s) {
       return bind::vec_nocp(s.cnt_data_);
     })
@@ -24,8 +26,8 @@ PYBIND11_MODULE(hetuCTR_partition, m) {
     .def("refine_data", &PartitionStruct::refineData)
     .def("refine_embed", &PartitionStruct::refineEmbed)
     .def("get_communication", &PartitionStruct::getCommunication)
-    .def("get_priority", &PartitionStruct::getPriority)
-    .def("get_result", &PartitionStruct::getResult)
+    .def("get_priority", &IncPartitionStruct::getPriority)
+    .def("get_result", &IncPartitionStruct::getResult)
     .def("get_data_cnt", [](IncPartitionStruct &s) {
       return bind::vec_nocp(s.cnt_data_);
     })
