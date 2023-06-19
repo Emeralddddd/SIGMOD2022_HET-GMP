@@ -20,8 +20,8 @@
 # )
 
 find_package(OpenMP REQUIRED)
-set(Protobuf_INCLUDE_DIR "/usr/local/protobuf/include")
-set(Protobuf_LIBRARY "/usr/local/protobuf/lib")
+set(Protobuf_INCLUDE_DIR "/usr/local/include")
+set(Protobuf_LIBRARY "/usr/local/lib64")
 find_package(Protobuf REQUIRED)
 # include_directories(${Protobuf_INCLUDE_DIRS})
 
@@ -34,7 +34,7 @@ aux_source_directory(partition partition_src)
 
 pybind11_add_module(hetuCTR_partition ${partition_src} ${PROTO_SRCS})
 target_link_libraries(hetuCTR_partition PRIVATE OpenMP::OpenMP_CXX)
-target_link_libraries(hetuCTR_partition PRIVATE /usr/local/protobuf/lib/libprotobuf.so)
+target_link_libraries(hetuCTR_partition PRIVATE protobuf)
 target_include_directories(hetuCTR_partition PRIVATE . partition)
 target_include_directories(hetuCTR_partition PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(hetuCTR_partition PRIVATE ${Protobuf_INCLUDE_DIRS})
