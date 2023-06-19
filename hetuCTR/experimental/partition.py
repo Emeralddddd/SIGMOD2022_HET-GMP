@@ -6,7 +6,7 @@ import os.path as osp
 
 import hetuCTR_partition
 def load_criteo_data():
-    fname = "/data/1/zhen/dac/sparse_feats.npy"
+    fname = "/data/1/zhen/criteo-tb/sparse_day_0.npy"
     assert osp.exists(fname)
     data = np.load(fname)
     if not data.data.c_contiguous:
@@ -56,7 +56,6 @@ def direct_partition(data, nparts, ngpus, batch_size, rerun, output):
         priority[i][idxs] = -1 # remove embedding that has been stored
         arr = np.argsort(priority[i])[len(idxs):][ : : -1]
         arr_dict[str(i)] = arr
-    arr_dict["priority"] = priority
     print("Sort priority Time : ", time.time()-start)
 
     if output != "":
@@ -66,15 +65,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--nrank", "-n" , type=int, default=4)
     parser.add_argument("--batch_size", "-b" , type=int, default=1)
-    parser.add_argument("--rerun", "-r" , type=int, default=5)
+    parser.add_argument("--rerun", "-r" , type=int, default=1)
     parser.add_argument("--ngpus", "-g" , type=int, default=1)
     parser.add_argument("--output", "-o" , type=str, default="/data/1/zhen/dac/partition/temp.npz")
     args = parser.parse_args()
     start = time.time()
+    mp =  hetuCTR_partition.get_multi_partition(4)
+    mat = get_comm_mat(4, 1)
     data = load_criteo_data()
     print("Load Data Time : ", time.time()-start)
     # np.random.shuffle(data)
-    direct_partition(data[:1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/dac/partition/temp.npz")
-    # for i in range(1,80):
-    #     print(i)
-    #     direct_partition(data[(i-1)*1000000:i * 1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/criteo-tb/partition/new/day0_{}m.npz".format(i))
+    # direct_partition(data[:1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/dac/partition/temp.npz")
+    for i in range(1,81):
+        print(i)
+        mp.add_new_data(data[:i * 1000000],mat,4,1,0.01)
+        mp.run_partition()
+        mp.save_partial_result("/data/1/zhen/criteo-tb/partition/new/day0_{}m.bin".format(i))
+        # direct_partition(data[:i * 1000000], args.nrank, args.ngpus, args.batch_size, args.rerun,"/data/1/zhen/criteo-tb/partition/full/day0_{}m.npz".format(i))

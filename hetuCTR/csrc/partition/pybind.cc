@@ -1,6 +1,7 @@
 #include "pybind/pybind.h"
 #include "partition.h"
 #include "inc_partition.h"
+#include "multi_partition.h"
 
 namespace hetuCTR {
 
@@ -36,6 +37,12 @@ PYBIND11_MODULE(hetuCTR_partition, m) {
     }).def("save_partial_result", &IncPartitionStruct::savePartialResult);
   m.def("inc_partition", inc_partition);
 
+  py::class_<MultiPartitionStruct>(m, "_MultiPartitionStruct", py::module_local())
+    .def("add_new_data", &MultiPartitionStruct::AddNewData)
+    .def("run_partitoin", &MultiPartitionStruct::RunPartition)
+    .def("save_partial_result", &MultiPartitionStruct::savePartialResult);
+
+  m.def("get_multi_partition", get_multi_partition);
 } // PYBIND11_MODULE
 
 } // namespace hetuCTR
