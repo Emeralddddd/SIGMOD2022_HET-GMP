@@ -39,7 +39,7 @@ PYBIND11_MODULE(hetuCTR_partition, m) {
 
   py::class_<MultiPartitionStruct>(m, "_MultiPartitionStruct", py::module_local())
     .def("add_new_data", &MultiPartitionStruct::AddNewData)
-    .def("run_partitoin", &MultiPartitionStruct::RunPartition)
+    .def("run_partition", &MultiPartitionStruct::RunPartition)
     .def("save_partial_result", &MultiPartitionStruct::savePartialResult);
 
   m.def("get_multi_partition", get_multi_partition);
