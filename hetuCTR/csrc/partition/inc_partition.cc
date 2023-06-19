@@ -14,6 +14,13 @@ static float quickpow(float a,int n) {
   return ans;
 }
 
+void IncPartitionStruct::initEmbedPartition(std::vector<int>& partition){
+  for(int i = 0; i < n_embed_; i++){
+    int target = l2g_[i] < partition.size() ? partition[l2g_[i]] : -1;
+    if(target >= 0) res_embed_[i] = target;
+  }
+}
+
 IncPartitionStruct::IncPartitionStruct(const py::array_t<int>& _input_data, const py::array_t<float>& _comm_mat, int _n_part, int _batch_size, float _theta)
 : PartitionStruct(_n_part,_batch_size,_theta) {
   n_data_ = _input_data.shape(0);

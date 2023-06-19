@@ -16,7 +16,7 @@ public:
 
   std::vector<int> res_data_, res_embed_;
   std::vector<int> cnt_data_, cnt_embed_;
-protected:
+// protected:
   float alpha_, beta_, theta_;
 
   int n_part_, n_data_, n_slot_, n_edge_, n_embed_;
