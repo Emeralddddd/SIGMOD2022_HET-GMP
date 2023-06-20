@@ -7,6 +7,7 @@ public:
     void AddNewData(const py::array_t<int>& _input_data,
         const py::array_t<float>& _comm_mat,
         int n_part, int batch_size, float theta);
+    void RunPartition(int iter_nums);
     void RunPartition();
     void savePartialResult(std::string path);
 

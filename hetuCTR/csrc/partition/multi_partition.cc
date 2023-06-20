@@ -10,8 +10,7 @@ void MultiPartitionStruct::AddNewData(const py::array_t<int>& _input_data,
     partitioner_ -> initEmbedPartition(embed_partiton_);
 }
 
-void MultiPartitionStruct::RunPartition(){
-    constexpr int iter_nums = 2;
+void MultiPartitionStruct::RunPartition(int iter_nums){
     for(int i = 0; i < iter_nums; i++){
         partitioner_ -> refineData();
         partitioner_ -> refineEmbed();
@@ -23,6 +22,10 @@ void MultiPartitionStruct::RunPartition(){
     for(int i = 0; i < partitioner_-> n_embed_; i++){
         embed_partiton_[partitioner_->l2g_[i]] = partitioner_->res_embed_[i];
     }
+}
+
+void RunPartition(){
+    RunPartition(1);
 }
 
 void MultiPartitionStruct::savePartialResult(std::string path){
