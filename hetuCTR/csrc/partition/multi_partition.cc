@@ -24,10 +24,6 @@ void MultiPartitionStruct::RunPartition(int iter_nums){
     }
 }
 
-void RunPartition(){
-    RunPartition(1);
-}
-
 void MultiPartitionStruct::savePartialResult(std::string path){
     partitioner_ -> savePartialResult(path);
 }
